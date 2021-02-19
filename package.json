@@ -1,0 +1,23 @@
+{
+  "name": "website-metrics-check",
+  "version": "1.0.0",
+  "description": "Websites availability take home project",
+  "main": "main.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "mocha"
+  },
+  "author": "Ilya Stepanov",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "csv-writer": "^1.6.0",
+    "eslint": "^7.20.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.0",
+    "mocha": "^8.3.0",
+    "sinon": "^9.2.4"
+  }
+}
