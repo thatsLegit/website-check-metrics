@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const colors = require('colors');
+require('colors');
 const WebsiteFSM = require('../FSM/WebsiteFSM');
 const Memory = require('./Memory');
 

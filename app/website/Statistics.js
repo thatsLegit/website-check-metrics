@@ -6,16 +6,11 @@ class Statistics {
         this._started = Date.now(); /* init time */
         this._responseTimeQueue = new Queue(); /* records each response time to find the max response */
         this._timeQueue = new Queue(); /* last element contains up-to-date website's metrics */
-        this._upTime = { /* The uptime persists over the lifetime */
-            value: 0,
-            ref: Date.now()
-        };
     }
 
     get stats() {
         const latestStats = this._timeQueue.last.value;
         return {
-            upTime: Date.now() - this._upTime.ref, /* uptime is the time since the last call with resp status != 'OK' */
             lifetime: this._lifetime,
             availability: latestStats.availability.value,
             maxResponseTime: latestStats.maxResponseTime,
@@ -25,9 +20,6 @@ class Statistics {
     }
 
     _updateAll({success, t, code}) {
-        if(success === false) this._upTime = {value: 0, ref: Date.now()} 
-        else this._upTime.value = Date.now() - this._upTime.ref;
-
         const availValue = success ? 1 : 0;
         const lastInserted = this._timeQueue.last;
         let newStat;
@@ -45,7 +37,7 @@ class Statistics {
         }
 
         this._timeQueue.enqueue(newStat);
-        return this.stats; /* for testing */
+        return this.stats;
     }
 
     _initStat(availValue, t, code) {

@@ -8,7 +8,7 @@ class Alerts {
         this._responseTimeQueue = new Queue();
     }
 
-    get Alert() { /* mainly used for testing purposes */
+    get Alert() {
         const last = this._timeQueue.last.value;
         return {
             date: last.date,

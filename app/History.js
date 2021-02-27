@@ -19,7 +19,6 @@ class History {
         for (const m of metrics) {
             this._header.push({id: m.id, title: m.title});
         }
-    
         this._csvWriter = createCsvWriter({ path: 'history.csv', header: this._header });
     }
 

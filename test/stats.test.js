@@ -21,7 +21,6 @@ const clock = FakeTimers.createClock();
 describe('Stats', function() {
     describe('Memory._refreshAllMetrics(data)', function() {
 
-        // checking types
         it('refreshAllMetrics() must return an Object', function() {
             const memory = new Memory({
                 statistics: [periods.lookBackTimePeriod[0]],
@@ -56,7 +55,6 @@ describe('Stats', function() {
             assert.typeOf(res.responseCodes, 'object');
         });
 
-        // checking precision of the returned stats
         it('Checking metrics precision over multipe http calls', function() {
             /* Test: 20 succesful calls then 5 failed */
 

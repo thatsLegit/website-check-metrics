@@ -37,7 +37,6 @@ const clock = FakeTimers.createClock();
 describe('Alerts', function() {
     describe('Memory._refreshAlerts(data)', function() {
 
-        // checking types
         it('refreshAlerts() must return an Object', function() {
             const memory = new Memory({
                 statistics: [periods.lookBackTimePeriod[0]],
@@ -49,6 +48,7 @@ describe('Alerts', function() {
                 t: 100,
                 code: 200
             });
+
             assert.typeOf(res, 'object');
         }); 
 
@@ -63,11 +63,11 @@ describe('Alerts', function() {
                 t: 100,
                 code: 200
             });
+
             assert.instanceOf(res.date, Date);
             assert.typeOf(res.availability, 'number');
         });
 
-        // checking precision of the returned availability
         it('Computing availability over multiple successful/failed calls, taking time into consideration ', function() {
             /* Test: 20 succesful calls then 5 failed then 5 succesful should give ~83% availability */
 

@@ -1,4 +1,4 @@
-const colors = require('colors');
+require('colors');
 
 class Presentation {
     constructor(input) {
@@ -14,7 +14,6 @@ class Presentation {
     }
     _displayStats(data) {
         console.log(`${data.url} metrics for the past ${data.period / 1000} minutes:`.cyan);
-        console.log(`Uptime: ${data.stats.upTime / 1000}s`);
         console.log(`Availability: ${data.stats.availability}%`);
         console.log(`Maximum response time: ${data.stats.maxResponseTime}ms`);
         console.log(`Average response time: ${data.stats.avgResponseTime}ms`);

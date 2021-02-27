@@ -1,4 +1,4 @@
-const colors = require('colors');
+require('colors');
 const readline = require('readline');
 
 const commonEmitter = require('./app/utils/events_common');
@@ -17,7 +17,7 @@ const rl = readline.createInterface({
         if (answer.match(/^y(es)?$/i)) {
             rl.question('Enter the url of the website : ', url => {
                 console.log(url.cyan);
-                if(!url.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/)) throw new Error('Invalid url entered.'.red);
+                if(!url.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/)) throw new Error('Invalid url entered.'.red);
                 rl.question('Enter the check interval for this website in miliseconds (between 1000 and 10000) : ', interval => {
                     console.log(interval.cyan);
                     if (interval > 10000 || interval < 1000) throw new Error('the check interval must be between 1000 and 10000ms'.red)
@@ -36,7 +36,7 @@ const rl = readline.createInterface({
 
 
 function startApp(userInput) {
-    const controller = new Controller(userInput);
+    new Controller(userInput);
     const presentation = new Presentation(userInput);
     const history = new History();
 

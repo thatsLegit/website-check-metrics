@@ -10,9 +10,6 @@ class UpState extends State {
         return 'up';
     }
   
-    Enter(prevState, data) {}
-    Exit(data) {}
-  
     Update(alert) {
         if(alert.availability < 80) this._parent.SetState('down', alert);
     }
@@ -27,7 +24,7 @@ class DownState extends State {
         return 'down';
     }
   
-    Enter(prevState, data) {
+    Enter(_, data) {
         commonEmitter.emit('publish_alert', data);
     }
   
