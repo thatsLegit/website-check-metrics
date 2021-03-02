@@ -1,4 +1,4 @@
-#Overview
+# Overview
 
 Hey, this is the work I did for the take home assignement about Website Availability & Performance Monitoring.
 I used the following metrics for each requested website:
@@ -25,20 +25,20 @@ Finally, to connect Alerts to the Presentation part of the application, a Finite
 is used. At each state change, an event is triggered to display the corresponding alert message.
 
 
-#Installation
+# Installation
 The app should work in a Nodejs env with version above 14.
 Install with 'npm install'
 Run app 'node main'
 Run tests: 'npm run test -s'
 Run eslint: 'npm run lint -s'
 
-#Improvements
+# Improvements
 
-##Metrics:
+## Metrics:
 I wanted to include into as a metric, the size of the request's body and the time it takes to load in the
 browser but I failed to find a simple way to do it because the body of the request is compressed.
 
-##Application design:
+## Application design:
 -A 'Metric' generic class would be great to be able to add additional metrics easily. For now it requires to hard-code
 the metric in the stats factory function in Statistics.
 -For now as soon as the state machine update to a different state than the previous, it triggers the execution of the
