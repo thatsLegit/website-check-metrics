@@ -23,20 +23,20 @@ class Website {
     _check() {
         let t1 = Date.now();
         fetch(this._parameters.url, { method: 'HEAD' })
-        .then(res => {
-            const data = {
-                success: res.statusText == 'OK'? true : false,
-                t: Date.now() - t1,
-                code: res.status
-            }
-            const alert = this._memory._refreshAlerts(data); /* generates alert report based on received data */
-            this._memory._refreshAllMetrics(data);
-            this._stateMachine.Update({...alert, url: this._parameters.url});
-        })
-        .catch(err => {
-            console.error(err);
-            throw new Error(`An unexpected error occured while checking website ${this._parameters.url}`.red);
-        });
+            .then(res => {
+                const data = {
+                    success: res.statusText == 'OK' ? true : false,
+                    t: Date.now() - t1,
+                    code: res.status
+                }
+                this._memory._refreshAlerts(data); /* generates alert report based on received data */
+                this._memory._refreshAllMetrics(data);
+                this._stateMachine.Update({ ...this._memory._alert.Alert, url: this._parameters.url });
+            })
+            .catch(err => {
+                console.error(err);
+                throw new Error(`An unexpected error occured while checking website ${this._parameters.url}`.red);
+            });
     }
 }
 

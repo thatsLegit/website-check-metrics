@@ -71,7 +71,7 @@ describe('Stats', function () {
             oldest = {
                 availability: {
                     value: 100,
-                    success: true,
+                    success: 1,
                     totNumCalls: 1,
                     successfulCalls: 1
                 },
@@ -90,7 +90,7 @@ describe('Stats', function () {
             last = {
                 availability: {
                     value: 100,
-                    success: true,
+                    success: 1,
                     totNumCalls: 2,
                     successfulCalls: 2
                 },
@@ -211,13 +211,13 @@ describe('Stats', function () {
         });
 
         beforeEach(function () {
-            statistics = new Statistics(periods.lookBackTimePeriod[0].lifetime); /* only the 10min look back time period is tested */
+            statistics = new Statistics(lifetime); /* only the 10min look back time period is tested */
             statistics._responseTimeQueue.enqueue(200); /* old */
             statistics._responseTimeQueue.enqueue(150); /* last */
             statistics._timeQueue.enqueue({
                 availability: {
                     value: 100,
-                    success: true,
+                    success: 1,
                     totNumCalls: 1,
                     successfulCalls: 1
                 },
@@ -236,7 +236,7 @@ describe('Stats', function () {
             statistics._timeQueue.enqueue({
                 availability: {
                     value: 100,
-                    success: true,
+                    success: 1,
                     totNumCalls: 2,
                     successfulCalls: 2
                 },

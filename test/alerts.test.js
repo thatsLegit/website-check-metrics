@@ -1,92 +1,155 @@
-const assert = require('chai').assert;
-const Memory = require('../app/website/Memory');
+const expect = require('chai').expect;
+const sinon = require('sinon');
 
+const Alerts = require('../app/website/Alerts');
 const { periods } = require('../app/utils/timePeriods');
 
-const FakeTimers = require("@sinonjs/fake-timers");
-const clock = FakeTimers.createClock();
-
-// alerts logic:
-// -> Website.check() 
-// -> memory._refreshAlerts(data) !TEST
-// -> Alerts._update_availability(data)
-// -> Website._stateMachine.Update(alert)
-// -> currentState.update(alert)
-// currentState 'up'?
-// -> if availability < 80, this._stateMachine.SetState('down', alert)
-// -> currentState.Exit(alert)
-// -> newState.Enter(alert)
-// -> emits 'publish_alert'(alert)
-// -> Presentation.displayAlert(alert)
-// currentState 'down' ?
-// -> if !availability > 80, this._stateMachine.SetState('up', alert)
-// -> currentState.Exit(alert)
-// -> emits 'publish_alert_resumed'(alert)
-// -> Presentation.displayAlertResumed(alert)
-// -> newState.Enter(alert)
 
 describe('Alerts', function () {
-    describe('Memory._refreshAlerts(data)', function () {
+    describe('Alerts._initStat(availValue, t)', function () {
 
-        it('refreshAlerts() must return an Object', function () {
-            const memory = new Memory({
-                statistics: [periods.lookBackTimePeriod[0]],
-                alert: periods.alertPeriod,
-            }); /* Only one of the look-back-time period (10min) is taken into account here to keep things simple */
+        let alerts;
 
-            const res = memory._refreshAlerts({
-                success: true,
-                t: 100,
-                code: 200
-            });
-
-            assert.typeOf(res, 'object');
+        beforeEach(() => {
+            alerts = new Alerts(periods.alertPeriod.lifetime); /* 2min */
         });
 
-        it('In the returned object properties, date: Date, availability: Number', function () {
-            const memory = new Memory({
-                statistics: [periods.lookBackTimePeriod[0]],
-                alert: periods.alertPeriod,
-            }); /* params for the stats with a look back of 10mins and 2mins for alerts */
+        it('Should return correct statistics on successful http call', () => {
+            const availValue = 1;
 
-            const res = memory._refreshAlerts({
-                success: true,
-                t: 100,
-                code: 200
-            });
+            const stats = alerts._initStat(availValue);
 
-            assert.instanceOf(res.date, Date);
-            assert.typeOf(res.availability, 'number');
+            expect(stats.availability.value).to.equal(100);
+            expect(stats.availability.success).to.equal(1);
+            expect(stats.availability.successfulCalls).to.equal(1);
         });
 
-        it('Computing availability over multiple successful/failed calls, taking time into consideration ', function () {
-            /* Test: 20 succesful calls then 5 failed then 5 succesful should give ~83% availability */
+        it('Should return correct statistics on failed http call', () => {
+            const availValue = 0;
 
-            const memory = new Memory({
-                statistics: [periods.lookBackTimePeriod[0]],
-                alert: periods.alertPeriod,
-            }); /* params for the stats with a look back of 10mins and 2mins for alerts */
-            const interval = 1500; /* website check interval time in ms */
+            const stats = alerts._initStat(availValue);
 
-            let success = true, count = 0;
-            let launchTest = clock.setInterval(function () {
-                memory._refreshAlerts({
-                    success,
-                    t: 100,
-                    code: 200
-                });
+            expect(stats.availability.value).to.equal(0);
+            expect(stats.availability.success).to.equal(0);
+            expect(stats.availability.successfulCalls).to.equal(0);
+        });
 
-                count++;
-                if (count == 20) success = false;
-                if (count == 25) success = true;
-            }, interval);
+    });
 
-            clock.setTimeout(() => {
-                clearInterval(launchTest);
-                assert.equal(memory._alert.Alert.availability, (5 / 6) * 100);
-            }, interval * 30);
+    describe('Alerts._statFactory(res, last, oldest = null)', function () {
 
-            clock.tick(interval * 30);
+        let alerts;
+
+        beforeEach(() => {
+            alerts = new Alerts(periods.alertPeriod.lifetime); /* 2min */
+        });
+
+        before(() => {
+            oldest = {
+                availability: {
+                    value: 100,
+                    success: 1,
+                    totNumCalls: 1,
+                    successfulCalls: 1
+                }
+            };
+            last = {
+                availability: {
+                    value: 100,
+                    success: 1,
+                    totNumCalls: 2,
+                    successfulCalls: 2
+                }
+            };
+        });
+
+        it('Should return correct availability with NO oldest value and failed http call', () => {
+            const availValue = 0;
+
+            const alert = alerts._statFactory(availValue, last);
+
+            expect(alert.availability.value).to.equal((2 / 3) * 100); /* current fails */
+            expect(alert.availability.success).to.equal(0);
+            expect(alert.availability.successfulCalls).to.equal(2);
+        });
+
+        it('Should return correct availability with an oldest value and failed http call', () => {
+            const availValue = 0;
+
+            const alert = alerts._statFactory(availValue, last, oldest);
+
+            expect(alert.availability.value).to.equal(50); /* current fails */
+            expect(alert.availability.success).to.equal(0);
+            expect(alert.availability.successfulCalls).to.equal(1);
+        });
+
+        it('Should return correct availability with NO oldest value and successfull http call', () => {
+            const availValue = 1;
+
+            const alert = alerts._statFactory(availValue, last);
+
+            expect(alert.availability.value).to.equal(100); /* current fails */
+            expect(alert.availability.success).to.equal(1);
+            expect(alert.availability.successfulCalls).to.equal(3);
+        });
+
+        it('Should return correct availability with an oldest value and successfull http call', () => {
+            const availValue = 1;
+
+            const alert = alerts._statFactory(availValue, last, oldest);
+
+            expect(alert.availability.value).to.equal(100); /* current fails */
+            expect(alert.availability.success).to.equal(1);
+            expect(alert.availability.successfulCalls).to.equal(2);
+        });
+    });
+
+    describe('Alerts._updateAlerts({ success, t })', function () {
+
+        let alert, availValue, clock, lifetime;
+
+        before(function () {
+            lifetime = periods.alertPeriod.lifetime; /* 2mins */
+            clock = sinon.useFakeTimers();
+        });
+
+        beforeEach(function () {
+            alert = new Alerts(lifetime);
+            alert._timeQueue.enqueue({
+                availability: {
+                    value: 100,
+                    success: 1,
+                    totNumCalls: 1,
+                    successfulCalls: 1
+                }
+            });
+            alert._timeQueue.enqueue({
+                availability: {
+                    value: 100,
+                    success: 1,
+                    totNumCalls: 2,
+                    successfulCalls: 2
+                }
+            });
+            availValue = 1; /* current */
+        });
+
+        it('Should increase timeQueue if the lifetime is NOT exceeded', function () {
+            const timeQSize = alert._timeQueue.size;
+
+            alert._updateAlerts(availValue);
+
+            expect(alert._timeQueue.size).to.be.equal(timeQSize + 1);
+        });
+
+        it('timeQueue should have a constant size if the lifetime IS exceeded', function () {
+            const timeQSize = alert._timeQueue.size;
+
+            clock.tick(lifetime + 1);
+
+            alert._updateAlerts(availValue);
+
+            expect(alert._timeQueue.size).to.be.equal(timeQSize);
         });
     });
 });

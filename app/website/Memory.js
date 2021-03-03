@@ -19,7 +19,7 @@ class Memory {
         }
     }
     _refreshAlerts(data) {
-        return this._alert._update_availability(data);
+        this._alert._updateAlerts(data);
     }
 }
 
