@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const Memory = require('../app/website/Memory');
 
-const {periods} = require('../app/utils/timePeriods');
+const { periods } = require('../app/utils/timePeriods');
 
 const FakeTimers = require("@sinonjs/fake-timers");
 const clock = FakeTimers.createClock();
@@ -12,32 +12,23 @@ const clock = FakeTimers.createClock();
 // -> Alerts._update_availability(data)
 // -> Website._stateMachine.Update(alert)
 // -> currentState.update(alert)
-    // currentState 'up'?
-        // -> if availability < 80, this._stateMachine.SetState('down', alert)
-        // -> currentState.Exit(alert)
-        // -> newState.Enter(alert)
-        // -> emits 'publish_alert'(alert)
-        // -> Presentation.displayAlert(alert)
-    // currentState 'down' ?
-        // -> if !availability > 80, this._stateMachine.SetState('up', alert)
-        // -> currentState.Exit(alert)
-        // -> emits 'publish_alert_resumed'(alert)
-        // -> Presentation.displayAlertResumed(alert)
-        // -> newState.Enter(alert)
+// currentState 'up'?
+// -> if availability < 80, this._stateMachine.SetState('down', alert)
+// -> currentState.Exit(alert)
+// -> newState.Enter(alert)
+// -> emits 'publish_alert'(alert)
+// -> Presentation.displayAlert(alert)
+// currentState 'down' ?
+// -> if !availability > 80, this._stateMachine.SetState('up', alert)
+// -> currentState.Exit(alert)
+// -> emits 'publish_alert_resumed'(alert)
+// -> Presentation.displayAlertResumed(alert)
+// -> newState.Enter(alert)
 
-// ? My strategy in testing alerts: 
+describe('Alerts', function () {
+    describe('Memory._refreshAlerts(data)', function () {
 
-// ? Unit testing the beginning of the alert trigger chain:
-// ? memory._refreshAlerts: converts received data from http calls to availability stats for the past 2mins
-// ? I am testing the returned data type as well as the correctness of its value.
-
-// ? To me it didn't make sense to test all the following functions as there role is consisting in updating states
-// ? according to the generated states, emit events and finally display the alert, if there's any, to the console.
-
-describe('Alerts', function() {
-    describe('Memory._refreshAlerts(data)', function() {
-
-        it('refreshAlerts() must return an Object', function() {
+        it('refreshAlerts() must return an Object', function () {
             const memory = new Memory({
                 statistics: [periods.lookBackTimePeriod[0]],
                 alert: periods.alertPeriod,
@@ -50,9 +41,9 @@ describe('Alerts', function() {
             });
 
             assert.typeOf(res, 'object');
-        }); 
+        });
 
-        it('In the returned object properties, date: Date, availability: Number', function() {
+        it('In the returned object properties, date: Date, availability: Number', function () {
             const memory = new Memory({
                 statistics: [periods.lookBackTimePeriod[0]],
                 alert: periods.alertPeriod,
@@ -68,7 +59,7 @@ describe('Alerts', function() {
             assert.typeOf(res.availability, 'number');
         });
 
-        it('Computing availability over multiple successful/failed calls, taking time into consideration ', function() {
+        it('Computing availability over multiple successful/failed calls, taking time into consideration ', function () {
             /* Test: 20 succesful calls then 5 failed then 5 succesful should give ~83% availability */
 
             const memory = new Memory({
@@ -86,16 +77,16 @@ describe('Alerts', function() {
                 });
 
                 count++;
-                if(count == 20) success = false;
-                if(count == 25) success = true;
+                if (count == 20) success = false;
+                if (count == 25) success = true;
             }, interval);
 
             clock.setTimeout(() => {
                 clearInterval(launchTest);
-                assert.equal(memory._alert.Alert.availability, (5/6)*100);
-            }, interval*30);
+                assert.equal(memory._alert.Alert.availability, (5 / 6) * 100);
+            }, interval * 30);
 
-            clock.tick(interval*30);
+            clock.tick(interval * 30);
         });
     });
 });
